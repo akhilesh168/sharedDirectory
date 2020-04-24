@@ -1,53 +1,90 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useRef, useState, useImperativeHandle, useEffect } from 'react';
+import List from '@material-ui/core/List';
+import { makeStyles } from '@material-ui/core/styles';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import Avatar from '@material-ui/core/Avatar';
+import { Paper } from '@material-ui/core';
 
-export default function Autocomplete(props) {
+const useStyles = makeStyles((theme) => ({
+    root: {
+      width: '100%',
+      maxWidth: 360,
+      backgroundColor: theme.palette.background.paper,
+    },
+  }));
 
+const Autocomplete = forwardRef((props, ref) => {
+
+    let suggestionsListComponent;
+    const classes = useStyles();
+    const childref = useRef();
     const [members, setMembers] = useState([...props.mem]);
-
     const [activeSuggestion, setActiveSuggestion] = useState(0);
     const [filteredSuggestions, setfilteredSuggestion] = useState([]);
     const [showSuggestions, setshowSuggestions] = useState(false);
     const [userInput, setuserInput] = useState('');
 
+    useEffect(() => {
+
+        let b = childref.current ? childref.current.childNodes[1].innerHTML : null;
+
+    }
+    )
+
+    useImperativeHandle(ref, () => ({
+
+        updateStateAfterDelete(newmembers) {
+            const tt = [];
+            setMembers([...tt]);
+            setMembers([...newmembers]);
+        }
+
+    }));
+
     function onChange(e) {
         // e.preventDefault();
         const { suggestions } = props;
         const userInput = e.currentTarget.value;
-        const filteredSuggestions = suggestions.filter(suggestion =>
+        const filteredSuggestions = suggestions.map(item => item.email).filter(suggestion =>
             !(suggestion.toLowerCase().indexOf(userInput.toLowerCase()))
         )
+        const filteredListOfObjects = suggestions.filter((item) => filteredSuggestions.indexOf(item.email) !== -1);
+
         setActiveSuggestion(0);
-        setfilteredSuggestion(filteredSuggestions);
+        setfilteredSuggestion(filteredListOfObjects);
         setshowSuggestions(true);
         setuserInput(e.currentTarget.value);
     }
 
     function onClick(e) {
-        let dummyArray = members;
+        let dummyArray = [];
+        dummyArray = members;
         setActiveSuggestion(0);
         setfilteredSuggestion([]);
         setshowSuggestions(false);
-        setuserInput(e.currentTarget.innerText);
-        dummyArray.push(e.currentTarget.innerText);
-        setMembers(dummyArray);
+        setuserInput(e.currentTarget.childNodes[1].innerHTML);
+        dummyArray.push(e.currentTarget.childNodes[1].innerHTML);
+        setMembers(dummyArray.sort());
         props.setMembers(members);
-
-
+        setuserInput("");
     }
 
     function onKeyDown(e) {
-        let dummyArray = members;
+        let dummyArray = [];
+        dummyArray = members;
         // User pressed the enter key, update the input and close the
         // suggestions
 
         if (e.keyCode === 13) {
             setActiveSuggestion(0);
             setshowSuggestions(false);
-            setuserInput(filteredSuggestions[activeSuggestion]);
-            dummyArray.push(filteredSuggestions[activeSuggestion]);
-            setMembers(dummyArray);
-
+            setuserInput(filteredSuggestions[activeSuggestion].email);
+            dummyArray.push(filteredSuggestions[activeSuggestion].email);
+            setMembers(dummyArray.sort());
             props.setMembers(members);
+            setuserInput("");
 
         }
         // User pressed the up arrow, decrement the index
@@ -65,29 +102,40 @@ export default function Autocomplete(props) {
             setActiveSuggestion(activeSuggestion + 1);
         }
     }
-    let suggestionsListComponent;
+
 
     if (showSuggestions && userInput) {
         if (filteredSuggestions.length) {
             suggestionsListComponent = (
-                <ul className="suggestions">
+
+                <div className="suggestion">
                     {filteredSuggestions.map((suggestion, index) => {
-                        let className;
+                        let classNames;
 
                         // Flag the active suggestion with a class
                         if (index === activeSuggestion) {
-                            className = "suggestion-active";
+                            classNames = "suggestion-active";
+
                         }
                         return (
-                            <li
-                                className={className}
-                                key={suggestion}
-                                onClick={onClick}>
-                                {suggestion}
-                            </li>
+                            <Paper key={suggestion.email} style={{ maxHeight: 200, overflow: 'auto' }} className={classes.root}>
+                            <List >
+                                <ListItem   className={"row" + " " + classNames}>
+                                    <ListItemAvatar>
+                                        <Avatar src={suggestion.avatar} />
+                                    </ListItemAvatar>
+                                    <ListItemText primary={suggestion.first_name + suggestion.last_name} secondary={suggestion.email} ref={childref} onClick={onClick} />
+
+                                </ListItem>
+                            </List>
+                            </Paper>
+
+
                         );
                     })}
-                </ul>
+
+                
+</div>
             );
         } else {
             suggestionsListComponent = (
@@ -105,9 +153,12 @@ export default function Autocomplete(props) {
                 onKeyDown={onKeyDown}
                 value={userInput}
                 placeholder="Enter name or registered email id"
+                className="form-control"
 
             />
             {suggestionsListComponent}
         </>
     );
-}
+})
+
+export default Autocomplete;

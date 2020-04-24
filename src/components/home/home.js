@@ -1,5 +1,5 @@
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
+
 import Container from '@material-ui/core/Container';
 import Button from '@material-ui/core/Button';
 import ShareModal from '../modal/modal';
@@ -9,11 +9,14 @@ export default function HomeContainer() {
 
     return (
         <>
-            <Container maxWidth="sm">
-                <Typography component="div" style={{ backgroundColor: '#cfe8fc', height: '220px' }} />
-                <Button color="primary" style={{ "left": "200px" }} variant="contained" onClick={() => setModalShow(true)}>
-                    Share
+            <Container maxWidth="sm" style={{ backgroundColor: "skyblue", width: "450px", height: "400px" }}>
+                <h3 className="text-center">Share Files</h3>
+                <div className="home_btn text-center">
+                    <Button color="primary" variant="contained" onClick={() => setModalShow(true)}>
+                        Share
       </Button>
+
+                </div>
 
                 <ShareModal
                     show={modalShow}
